@@ -4,8 +4,11 @@ import Button from 'components/button/Button';
 import './App.css';
 
 function App() {
-  const [joke, setJoke] = useState("");
+  const [joke, setJoke] = useState('');
+  const [beginnings, setBeginnings] = useState<any>();
   const [loading, setLoading] = useState(false);
+  const [markovData, setMarkovData] = useState<any[]>();
+  const order = 1;
 
   useEffect(() => {
     async function fetchAndTrain() {
@@ -17,7 +20,7 @@ function App() {
           const data = await fetchData(i);
           consolidatedData.push(...data.results);
         }
-        // add train here
+        train(consolidatedData);
       } catch (err) {
         throw(err);
       } finally {
@@ -26,10 +29,6 @@ function App() {
     }
     fetchAndTrain();
   }, [])
-
-  const generate = (): void => {
-    setJoke('sample joke');
-  }
 
   const fetchData = async (page: number): Promise<any> => {
     try {
@@ -44,6 +43,32 @@ function App() {
     } catch (err) {
       throw(err);
     }
+  }
+
+  const generate = (): void => {
+    setJoke('sample joke');
+  }
+
+  const train = (data: any): void => {
+    let firstWords: any[] = [];
+
+    const trainedData = data.reduce((acc: any, curr: any) => {
+      let words = curr.joke.split(/\s+/);
+
+      firstWords.push(words.slice(0, order).join(' '));
+      for(let i = 0; i < words.length - order; i++){
+        let gram = words.slice(i, i + order).join(' ');
+        let next = words[i + order]
+        if(!acc[gram]){
+          acc[gram] = []
+        } 
+        acc[gram].push(next)
+      }
+      return acc;
+    }, {})
+
+    setMarkovData(trainedData);
+    setBeginnings(firstWords);
   }
 
   return (
