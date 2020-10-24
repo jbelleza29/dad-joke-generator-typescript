@@ -7,7 +7,7 @@ function App() {
   const [joke, setJoke] = useState('');
   const [beginnings, setBeginnings] = useState<any>();
   const [loading, setLoading] = useState(false);
-  const [markovData, setMarkovData] = useState<any[]>();
+  const [markovData, setMarkovData] = useState<any[]>([]);
   const order = 1;
 
   useEffect(() => {
@@ -45,8 +45,26 @@ function App() {
     }
   }
 
+  const getRandom = (data: any[]): any => {
+    return data[Math.floor(Math.random() * data.length)]
+  }
+
   const generate = (): void => {
-    setJoke('sample joke');
+    const limit = 50;
+    let generatedJoke = [];
+    let currentWord = getRandom(beginnings);
+
+    generatedJoke = currentWord.split(/\s+/);
+
+    for(let i = 0; i <= limit; i++){
+      let nextPossibilities = markovData[currentWord];
+      if(!nextPossibilities)
+        break;
+      let nextWord = getRandom(nextPossibilities);
+      generatedJoke.push(nextWord);
+      currentWord = generatedJoke.slice(generatedJoke.length - order, generatedJoke.length).join(' ');
+    }
+    setJoke(generatedJoke.join(' '));
   }
 
   const train = (data: any): void => {
