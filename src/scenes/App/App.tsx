@@ -10,7 +10,8 @@ interface MarkovData {
 function App() {
   const [joke, setJoke] = useState('');
   const [beginnings, setBeginnings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const [markovData, setMarkovData] = useState<MarkovData>({});
   const [search, setSearch] = useState('');
   const order = 1;
@@ -30,7 +31,6 @@ function App() {
         let next = words[i + order]
         if(oldData[gram]){
           acc[gram] = [...oldData[gram], next];
-          console.log([...oldData[gram], next], gram, next, 'insta');
           continue;
         }
 
@@ -60,6 +60,7 @@ function App() {
       }
       train(consolidatedData);
     } catch (err) {
+      setError(err.toString());
       throw(err);
     } finally {
       setLoading(false);
@@ -82,6 +83,7 @@ function App() {
       let data = res.json();
       return data;
     } catch (err) {
+      setError(err.toString());
       throw(err);
     }
   }
@@ -109,12 +111,7 @@ function App() {
   }
 
   const generateJoke = (): void => {
-    console.log(markovData);
     setJoke(generate());
-  }
-
-  const resetData = () => {
-    setMarkovData({});
   }
 
   const trainBySearch = () => {
@@ -128,9 +125,10 @@ function App() {
 
   return (
     <div className="App">
+      {error && <span>{error}</span>}
       <input onChange={onChangeInput} value={search} placeholder='Give a keyword'/>
       <Button text='Use keyword' disabled={loading || !search} onClick={trainBySearch} />
-      <h3>{joke ? joke : 'Press Generate button to receive Dad jokes!'}</h3>
+      <h2>{joke ? joke : 'Press Generate button to receive Dad jokes!'}</h2>
       <Button text='Generate' disabled={loading} onClick={generateJoke} />
     </div>
   );
